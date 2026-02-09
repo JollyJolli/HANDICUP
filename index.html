@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedorro Tracker - Nivel Cabrón 🔥🍻</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --text: #c9d1d9;
+            --card: #161b22;
+            --accent: #58a6ff;
+            --green: #238636;
+            --orange: #f59e0b;
+            --red: #da3633;
+            --border: #30363d;
+            --yellow: #f0b429;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #f85149;
+            text-align: center;
+            margin: 20px 0 10px;
+            font-size: 1.7rem;
+        }
+        .total-grupal {
+            background: #1f2937;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 420px;
+        }
+        .total-grupal h2 { color: var(--yellow); margin-bottom: 8px; font-size: 1.3rem; }
+        .total-grupal .number { font-size: 2.4rem; font-weight: bold; color: #ff9800; }
+        .progress-bar {
+            height: 12px;
+            background: #2d3748;
+            border-radius: 6px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease, background 0.4s;
+        }
+        .progress-fill.good { background: var(--green); }
+        .progress-fill.warning { background: var(--orange); }
+        .progress-fill.danger { background: var(--red); }
+        .container { width: 100%; max-width: 420px; }
+        .person {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .person h3 { color: var(--accent); margin-bottom: 10px; font-size: 1.25rem; }
+        .person button {
+            background: var(--green);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-right: 10px;
+        }
+        .person button:hover { background: #2ea043; }
+        .person .count { font-size: 1.1rem; font-weight: bold; color: var(--yellow); }
+        #reset {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            width: 100%;
+            margin-top: 20px;
+        }
+        #reset:hover { background: #b91c1c; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px 20px;
+            max-width: 92%;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+            animation: pop 0.35s ease-out;
+        }
+        @keyframes pop { 0% { transform: scale(0.75) translateY(20px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+        .modal h2 { color: var(--accent); margin-bottom: 15px; font-size: 1.5rem; }
+        .modal p { margin-bottom: 18px; font-size: 1.15rem; line-height: 1.45; }
+        .modal .motivacion { font-style: italic; color: #9ca3af; margin-top: 10px; font-size: 1rem; }
+        .modal button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        .modal button:hover { background: #388bfd; }
+
+        @media (max-width: 500px) { h1 { font-size: 1.5rem; } .total-grupal .number { font-size: 2rem; } }
+    </style>
+</head>
+<body>
+    <h1>Pedorro Tracker - Nivel Cabrón 🔥🍻</h1>
+
+    <div class="total-grupal">
+        <h2>Total Grupal (equivalente handicap)</h2>
+        <div class="number" id="total-equivalente">0.00</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div style="margin-top:8px; font-size:0.9rem;" id="progress-text">Meta diaria: 20.00</div>
+    </div>
+
+    <div class="container">
+        <div class="person">
+            <h3>Luis (×1.00)</h3>
+            <button onclick="addShot('luis')">Luis +1 shot</button>
+            <span class="count" id="luis-count">Shots reales: 0</span>
+        </div>
+        <div class="person">
+            <h3>Andrés (×1.15)</h3>
+            <button onclick="addShot('andres')">Andrés +1 shot</button>
+            <span class="count" id="andres-count">Shots reales: 0</span>
+        </div>
+        <div class="person">
+            <h3>Rodrigo (×1.30)</h3>
+            <button onclick="addShot('rodrigo')">Rodrigo +1 shot</button>
+            <span class="count" id="rodrigo-count">Shots reales: 0</span>
+        </div>
+        <div class="person">
+            <h3>Martín (×1.45)</h3>
+            <button onclick="addShot('martin')">Martín +1 shot</button>
+            <span class="count" id="martin-count">Shots reales: 0</span>
+        </div>
+
+        <button id="reset" onclick="resetCounts()">Resetear la peda</button>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">¡Shot al tiro, cabrón!</h2>
+            <p id="modal-text"></p>
+            <div class="motivacion" id="motivacion-text"></div>
+            <button onclick="closeModal()">Órale, siguiente</button>
+        </div>
+    </div>
+
+    <script>
+        const multipliers = { luis: 1.00, andres: 1.15, rodrigo: 1.30, martin: 1.45 };
+        const META_DIARIA = 20.00; // Cambia aquí si quieren más o menos pedo por noche
+
+        let counts = { luis: 0, andres: 0, rodrigo: 0, martin: 0 };
+
+        const motivaciones = [
+            "¡Así se hace, pinche valiente! 💪🍻",
+            "Otro más y ya la armamos, no te rajes 😈",
+            "Martín ya va volando, ¿quién sigue? 🔥",
+            "Luis base, pero con huevos, ¡dale!",
+            "Rodrigo poniendo experiencia, cabrón",
+            "Andrés aguantando como campeón, ¡órale!",
+            "Ya huele a cruda legendaria mañana 😂",
+            "El handicap está funcionando... o todos están muy pendejos 🤡"
+        ];
+
+        if (localStorage.getItem('pedorroShotsV3')) {
+            counts = JSON.parse(localStorage.getItem('pedorroShotsV3'));
+            updateAll();
+        }
+
+        function addShot(person) {
+            counts[person]++;
+            save();
+            updateAll();
+
+            const name = person.charAt(0).toUpperCase() + person.slice(1);
+            const real = counts[person];
+            const equivThis = multipliers[person].toFixed(2);
+            const total = calculateTotalEquiv().toFixed(2);
+            const motiv = motivaciones[Math.floor(Math.random() * motivaciones.length)];
+
+            document.getElementById('modal-title').textContent = `${name} se la echó`;
+            document.getElementById('modal-text').innerHTML = 
+                `Shots reales: <strong>${real}</strong><br>` +
+                `Valor handicap este shot: <strong>${equivThis}</strong><br><br>` +
+                `<strong>Total grupal:</strong> ${total} / ${META_DIARIA.toFixed(2)}`;
+
+            document.getElementById('motivacion-text').textContent = motiv;
+
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function calculateTotalEquiv() {
+            return Object.keys(counts).reduce((sum, p) => sum + counts[p] * multipliers[p], 0);
+        }
+
+        function updateAll() {
+            document.getElementById('luis-count').textContent = `Shots reales: ${counts.luis}`;
+            document.getElementById('andres-count').textContent = `Shots reales: ${counts.andres}`;
+            document.getElementById('rodrigo-count').textContent = `Shots reales: ${counts.rodrigo}`;
+            document.getElementById('martin-count').textContent = `Shots reales: ${counts.martin}`;
+
+            const total = calculateTotalEquiv();
+            document.getElementById('total-equivalente').textContent = total.toFixed(2);
+
+            const porcentaje = (total / META_DIARIA) * 100;
+            const fill = document.getElementById('progress-fill');
+            fill.style.width = Math.min(porcentaje, 100) + '%';
+
+            if (porcentaje < 60) fill.className = 'progress-fill good';
+            else if (porcentaje < 90) fill.className = 'progress-fill warning';
+            else fill.className = 'progress-fill danger';
+        }
+
+        function resetCounts() {
+            if (confirm('¿Resetear la peda completa, o qué pedo?')) {
+                counts = { luis: 0, andres: 0, rodrigo: 0, martin: 0 };
+                save();
+                updateAll();
+            }
+        }
+
+        function save() { localStorage.setItem('pedorroShotsV3', JSON.stringify(counts)); }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+        window.onclick = e => { if (e.target.id === 'modal') closeModal(); };
+
+        updateAll();
+    </script>
+</body>
+</html>
